@@ -1,6 +1,9 @@
 # License: GNU Affero General Public License v3 or later
 
-from log import return_logger
+from __future__ import absolute_import
+
+from builtins import str
+from .log import return_logger
 logger = return_logger(__name__, False)
 
 def write_operon_dict(operons,mibig_dict,attributes,path,**kwargs):
@@ -50,7 +53,7 @@ def write_group_dict(group_collections_by_type,path,**kwargs):
         handle.write('var Groups = {\n')
         for category in group_collections_by_type:
             collections = group_collections_by_type[category]
-            for coll_name,coll in collections.items():
+            for coll_name,coll in list(collections.items()):
                 handle.write('  "%s": ' %coll_name)
                 operon_names = []
                 for operon in coll.itersubset(**kwargs):
