@@ -2,9 +2,11 @@
 
 # Find all operons belonging to specific subcategories based on pfam2ec and TIGRFAM2ec links
 
-from Genes import OperonCollection, CollectionCollection
+from __future__ import absolute_import
 
-from log import return_logger
+from .Genes import OperonCollection, CollectionCollection
+
+from .log import return_logger
 logger = return_logger(__name__, False)
 
 def main(operons,domain2ec):
@@ -55,7 +57,7 @@ def assign_groups_to_operons(operons,categories_domains):
     for category in operons_per_category:
         operons_group = operons_per_category[category]
         collection = OperonCollection(dict([(operon.name,operon) for operon in operons_group]),collection_type='EC',name=category,\
-                                      descr='Operons containing a common enzyme class',prep=False)
+                                      descr='Operons containing a common enzyme class')
         collections_per_group[category] = collection
     return collections_per_group
     
