@@ -12,11 +12,15 @@
 # Each genome is an object, containing its scaffolds in a dictionary
 # Each gene is an object
 
+from __future__ import absolute_import
+from builtins import range
+from builtins import object
+
 from collections import OrderedDict
 import numpy as np
 
-from lib import Container, Edge, rev_comp
-from log import return_logger
+from .lib import Container, Edge, rev_comp
+from .log import return_logger
 
 logger = return_logger(__name__, False)
 
@@ -32,7 +36,7 @@ class D(dict):
     # c) If sortkey is defined, it iterates over values sorted by sortkey
     def __init__(self,*args,**kwargs):
         if len(args) > 0 and type(args[0]) == dict:
-            args = [(k,v) for k,v in args[0].items()]
+            args = [(k,v) for k,v in list(args[0].items())]
         dict.__init__(self,args)
         self.__dict__.update(kwargs)
 
@@ -65,7 +69,7 @@ class D(dict):
         return False
 
     def __iter__(self):
-        for item in self.values():
+        for item in list(self.values()):
             yield item
             
     def __repr__(self):
@@ -73,10 +77,10 @@ class D(dict):
     
     def iter_sorted(self):
         if hasattr(self,'sortkey') and hasattr(self,'sortrev'):
-            for v in sorted(self.values(),key=self.sortkey,reverse=self.sortrev):
+            for v in sorted(list(self.values()),key=self.sortkey,reverse=self.sortrev):
                 yield v
         else:
-            for v in self.values():
+            for v in list(self.values()):
                 yield v
         
     def setattrs(self,**kwargs):
@@ -124,7 +128,7 @@ class D(dict):
             for key in extra_dict:
                 out += '>%s\n%s\n' %(key,extra_dict[key])
         if filename:
-            if type(filename) == str:
+            if isinstance(filename, type(u"")):
                 with open(filename,'w') as f:
                     f.write(out)
             elif type(filename) == list:
@@ -186,7 +190,7 @@ class GeneCollection(D):
         for gene in itr:
             if subset and sub_item.name not in subset:
                 continue
-            for key,value in kwargs.items():
+            for key,value in list(kwargs.items()):
                 if not (hasattr(gene,key) and getattr(gene,key) == value):
                     break
             else:
@@ -196,7 +200,7 @@ class GeneCollection(D):
         yield self
                 
     def set_genes(self):
-        self.genes = sorted(self.values(),key=self.sortkey,reverse=self.sortrev)
+        self.genes = sorted(list(self.values()),key=self.sortkey,reverse=self.sortrev)
             
     def setflanks(self):
         if not self.flanks_set:
@@ -276,8 +280,8 @@ class Operon(GeneCollection):
             self.COG_std = None
         elif len(all_cog) == 1:
             self.COG_avg = all_cog[0]
-            if hasattr(self.values()[0].genome,'COG_global_std'):
-                self.COG_std = self.values()[0].genome.COG_global_std
+            if hasattr(list(self.values())[0].genome,'COG_global_std'):
+                self.COG_std = list(self.values())[0].genome.COG_global_std
             else:
                 self.COG_std = 0.05
         else:
@@ -357,7 +361,7 @@ class CollectionCollection(D):
                 continue
             for item in sub_item.itergenecoll():
                 if GeneCollection in type(item).__bases__:
-                    for key,value in kwargs.items():
+                    for key,value in list(kwargs.items()):
                         if not (hasattr(item,key) and getattr(item,key) == value):
                             break
                     else:
@@ -371,7 +375,7 @@ class CollectionCollection(D):
         else:
             itr = self
         for item in itr:
-            for key,value in kwargs.items():
+            for key,value in list(kwargs.items()):
                 if hasattr(item,key):
                     item_value = getattr(item,key)
                     if value != getattr(item,key) and not(type(item_value) == list and value in item_value):
