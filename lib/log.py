@@ -1,9 +1,10 @@
 # License: GNU Affero General Public License v3 or later
 
+from builtins import object
 import logging
 import os
 
-class LoggerOperator():
+class LoggerOperator(object):
     
     def __init__(self):
         # Have the logger handlers been set
