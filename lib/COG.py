@@ -4,6 +4,10 @@
 #Original algorithm developed by Michaelis Hadjithomas
 #Script heavily modified and adapted by Alexander Kloosterman
 
+from __future__ import division
+from __future__ import absolute_import
+from builtins import range
+from past.utils import old_div
 
 import os
 import matplotlib.pyplot as plt
@@ -17,8 +21,8 @@ import pylab as pyplt
 
 #from lmfit.models import SkewedGaussianModel
 #from lmfit_wrapper import fit_truecogs
-from lib import autovivify, sortdictkeysbylenvalues, fuse_dict_list, run_mcl
-from log import return_logger
+from .lib import autovivify, sortdictkeysbylenvalues, fuse_dict_list, run_mcl
+from .log import return_logger
 
 #from lmfit.models import SkewedGaussianModel
 #from lib.lmfit_wrapper import fit_truecogs
@@ -196,7 +200,7 @@ def add_genome_cog(base_group,genome,true_pair_dict,base_truecogs,genome_dict):
 def add_best_genome(base_group,truecog_pairs,true_pairs_gene,genomes,criteria,genome_dict,base_truecogs = [],min_truecogs=10):
     if base_truecogs == []:
         if len(base_group) != 2:
-            raise StandardError('Too many genomes without a specified truecog group')
+            raise Exception('Too many genomes without a specified truecog group')
         base_truecogs = truecog_pairs[base_group[0],base_group[1]]
     new_truecogs = {}
     best_all_cutoffs = []
@@ -396,7 +400,7 @@ def draw_histograms_pairwise(true_scores,histogram_data,f):
             if cutoff < minX:
                 minX = cutoff
     logger.debug('Minx: %s' %minX)
-    lower_bound = int(minX/10)*10
+    lower_bound = int(old_div(minX,10))*10
     x_incr = (100-minX) / 10.0
     plt.rcParams["figure.figsize"] = figsize
     for t1 in sorted(true_scores.keys()):
@@ -434,7 +438,7 @@ def draw_histograms_pairwise(true_scores,histogram_data,f):
                          arrowprops=dict(facecolor='darkgreen', width = 2, headwidth=5, shrink=0.05, alpha=0.8),
                          )
             plt.axis([minX, 100, 0, maxY])
-            plt.xticks(range(lower_bound,101,10), fontsize = font * 0.75)
+            plt.xticks(list(range(lower_bound,101,10)), fontsize = font * 0.75)
 #                print "%s %s %s" % (t1,t2,range(int(minX/10)*10,100,10))
             plt.tick_params(
                             axis='y',          # changes apply to the x-axis
@@ -838,7 +842,7 @@ def main(path,allvallfile,name,settings,genome_dict,genomes_allowed=False):
     propagate_truecogs = settings['propagate_truecogs']
     
     if not genomes_allowed:
-        genomes_allowed = genome_dict.keys()
+        genomes_allowed = list(genome_dict.keys())
     
 #    gene2scf,scf_genelist = generate_scaffold_lists(genome_list)
     logger.info('Parsing allvall BLAST results')
