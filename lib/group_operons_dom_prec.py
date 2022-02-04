@@ -1,11 +1,14 @@
 # License: GNU Affero General Public License v3 or later
 
+from __future__ import division
+from __future__ import absolute_import
+from past.utils import old_div
 import os
 import numpy as np
-from lib import run_mcl, read_mcl, pairs_to_groups, write_ssn, Edge
-from Genes import OperonCollection
+from .lib import run_mcl, read_mcl, pairs_to_groups, write_ssn, Edge
+from .Genes import OperonCollection
 
-from log import return_logger
+from .log import return_logger
 logger = return_logger(__name__, False)
 
 def main(operons,mibig_dict,prec_pairs,jaccard_pairs,settings):
@@ -32,11 +35,11 @@ def find_overlap_pairs(prec_pairs,jaccard_pairs):
         for pair in pairs:
             if operon in prec_pairs and pair in prec_pairs[operon]:
                 prec_weights = []
-                for bitscore, pid in prec_pairs[operon][pair].values():
+                for bitscore, pid in list(prec_pairs[operon][pair].values()):
                     prec_weights.append(pid)
                 prec_weight = np.average(prec_weights)/100.0
                 jac_weight = pairs[pair][0]
-                new_weight = (prec_weight + jac_weight) / 2
+                new_weight = old_div((prec_weight + jac_weight), 2)
 
                 if operon not in operon_pairs:
                     operon_pairs[operon] = {}
