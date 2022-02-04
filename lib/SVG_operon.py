@@ -5,9 +5,16 @@
 
 # Making arrows
 
+from __future__ import division
+from __future__ import absolute_import
+
+from builtins import str
+from builtins import range
+from past.utils import old_div
+
 import os
     
-from log import return_logger
+from .log import return_logger
 
 logger = return_logger(__name__, False)
     
@@ -23,7 +30,7 @@ def SVG_operon(operon,all_domains,color_dict,domain_descr,html_path,settings, \
     ALL_TEXT = ''
     
     # Line passing through all the genes
-    l = line(marginX,marginY+ArrowHeight/2,(operon.extra_end-operon.extra_start)/scaling)
+    l = line(marginX,marginY+old_div(ArrowHeight,2),old_div((operon.extra_end-operon.extra_start),scaling))
     ALL_TEXT += l + '\n'
     
     id = 0
@@ -40,7 +47,7 @@ def SVG_operon(operon,all_domains,color_dict,domain_descr,html_path,settings, \
     for gene in genes:
         # print(gene)
         id += 1
-        start,stop = (gene.start-operon.extra_start + 1)/scaling,(gene.end-operon.extra_start)/scaling # +1 to adjust for pythonic 0-index 
+        start,stop = old_div((gene.start-operon.extra_start + 1),scaling),old_div((gene.end-operon.extra_start),scaling) # +1 to adjust for pythonic 0-index 
         color = determine_gene_color(gene,all_domains,color_dict)
         extra_dict = {}
         domains = []
@@ -52,7 +59,7 @@ def SVG_operon(operon,all_domains,color_dict,domain_descr,html_path,settings, \
                 descr = 'Unknown'
             descr_dict[domain] = descr
             # Figure out which subclass this gene belongs to
-            for key,value in all_domains.items():
+            for key,value in list(all_domains.items()):
                 if domain in value:
                     if key not in extra_dict:
                         extra_dict[key] = domain
@@ -108,7 +115,7 @@ def SVG_operon(operon,all_domains,color_dict,domain_descr,html_path,settings, \
             elif gene == genes[0]:
                 x_line = marginX
             else:
-                x_line = marginX + (start - prev_stop)/2 + prev_stop
+                x_line = marginX + old_div((start - prev_stop),2) + prev_stop
                 
             bound_length = HeadEdge + ArrowHeight
             y_line_start = marginY - 0.5*bound_length
@@ -410,7 +417,7 @@ def arrow(id,X,Y,L,H,strand,h,l,color='#cccccc',svg_class=False,title='',extra_d
         A = [X,Y]
         B = [X+L-l,Y]
         C = [X+L-l,Y-h]
-        D = [X+L,Y+H/2]
+        D = [X+L,Y+old_div(H,2)]
         E = [X+L-l,Y+H+h]
         F = [X+L-l,Y+H]
         G = [X,Y+H]
@@ -419,7 +426,7 @@ def arrow(id,X,Y,L,H,strand,h,l,color='#cccccc',svg_class=False,title='',extra_d
             # squeeze arrow if length shorter than head length
             B = [X,Y]
             C = [X,Y-h]
-            D = [X+L,Y+H/2]
+            D = [X+L,Y+old_div(H,2)]
             E = [X,Y+H+h]
             F = [X,Y+H]
     
@@ -428,7 +435,7 @@ def arrow(id,X,Y,L,H,strand,h,l,color='#cccccc',svg_class=False,title='',extra_d
         A = [X+L,Y]
         B = [X+l,Y]
         C = [X+l,Y-h]
-        D = [X,Y+H/2]
+        D = [X,Y+old_div(H,2)]
         E = [X+l,Y+H+h]
         F = [X+l,Y+H]
         G = [X+L,Y+H]
@@ -437,7 +444,7 @@ def arrow(id,X,Y,L,H,strand,h,l,color='#cccccc',svg_class=False,title='',extra_d
             # squeeze arrow if length shorter than head length
             B = [X+L,Y]
             C = [X+L,Y-h]
-            D = [X,Y+H/2]
+            D = [X,Y+old_div(H,2)]
             E = [X+L,Y+H+h]
             F = [X+L,Y+H]
     func_text = ''
@@ -446,7 +453,7 @@ def arrow(id,X,Y,L,H,strand,h,l,color='#cccccc',svg_class=False,title='',extra_d
     line = """ <polygon %s%sid="%s" 
                    points="%i,%i %i,%i %i,%i %i,%i %i,%i %i,%i %i,%i"
                    style="fill:%s;" """  % (class_text,func_text,id,A[0],A[1],B[0],B[1],C[0],C[1],D[0],D[1],E[0],E[1],F[0],F[1],G[0],G[1],color)
-    for key, value in extra_dict.items():
+    for key, value in list(extra_dict.items()):
         line += '%s="%s" ' %(key,value)
     line += '>\n'
     if title != '':
@@ -472,7 +479,7 @@ def box(X,Y,width,height,id='bla',cl=False,extra_style={}):
         class_text = 'class="%s" ' %cl
     if extra_style != {}:
         style_text = 'style="'
-        for key,value in extra_style.items():
+        for key,value in list(extra_style.items()):
             style_text += '%s:%s;' %(key,value)
         style_text += '"'
     else:
@@ -499,7 +506,7 @@ def line_exp(X1,X2,Y1,Y2,dashed=False,width=2,extra_dict={}):
     '''
     
     extra_text = ''
-    for key,value in extra_dict.items():
+    for key,value in list(extra_dict.items()):
         extra_text += '%s="%s" ' %(key,value)
     
     line = '''<line %s x1="%i" x2="%i" y1="%i" y2="%i"\n''' %(extra_text,X1,X2,Y1,Y2)
@@ -517,7 +524,7 @@ def text(X,Y,s,extra_dict={},text_class=False,background=False):
     else:
         classtext = ''
     extra_text = ''
-    for key,value in extra_dict.items():
+    for key,value in list(extra_dict.items()):
         extra_text += '%s="%s" ' %(key,value)
         
     t = '''<text {0}{1} x="{3}" y="{4}">{2}</text>'''.format(classtext,extra_text,s,X,Y)
