@@ -2,12 +2,14 @@
 
 # Script to write HTML pages for decRiPPter
 
+from __future__ import absolute_import
+
 import numpy as np
 import os
 
-from lib import read_template, sortdictkeysbyvalues
+from .lib import read_template, sortdictkeysbyvalues
 
-from log import return_logger
+from .log import return_logger
 logger = return_logger(__name__, False)
 
 def main(settings,operons,collections_by_type,headers,domain_descr,genome_dict):
@@ -46,7 +48,7 @@ def write_index(settings,operons,collections_by_type,headers,domain_descr,genome
         menu_text += '''<button class="tablinks" onclick="opentab(event, '%s')">%s</button>\n''' %(group_type,header)
         coll_text = ''
         # Get the content per group type; each collection is an operon
-        for coll_name,collection in collections.items():
+        for coll_name,collection in list(collections.items()):
             logger.debug('Writing table row for collection %s' %coll_name)
             if group_type == 'EC':
                 coll_name_table = coll_name.replace('_',' ')
@@ -64,7 +66,7 @@ def write_index(settings,operons,collections_by_type,headers,domain_descr,genome
                 score_text = '%.2f +- %.2f' %(np.average(scores),np.std(scores))
             else:
                 score_text = 'N\A'
-            
+
             if domain_text != '<p>No common domains found</p>':
                 domain_text = '''%i<br><button class="collapsible">Show domains</button>
             <div class="content">
@@ -148,7 +150,7 @@ def write_all_entries(settings,collections_by_type,domain_descr,index_file_all):
         script_text += '<script src="%s"></script>\n' %os.path.relpath(settings['paths']['filter_scripts'],start=type_path)
         script_text += '<script src="%s"></script>\n' %script_path
 
-        for name_coll,collection in collections.items():
+        for name_coll,collection in list(collections.items()):
             page_id_text = '    <html_id>%s</html_id>\n' %name_coll
             table_ids = []
             info_text = write_entry_info(collection,type_path)
@@ -214,7 +216,7 @@ def write_operon_td(operon,coll_path,settings):
         else:
             longest_overlap = 0
             best_cluster = ''
-            for name,data in operon.overlaps_antismash.items():
+            for name,data in list(operon.overlaps_antismash.items()):
                 if data['overlap_type'] == 'total':
                     best_cluster = name
                     break
