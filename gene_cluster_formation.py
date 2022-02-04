@@ -1,5 +1,13 @@
 # License: GNU Affero General Public License v3 or later
 
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from past.utils import old_div
+
 import pickle
 import os
 import sys
@@ -31,7 +39,7 @@ import lib.group_operons_EC as group_EC
 import lib.group_operons_dom_prec as group_pj
 import lib.SVG_operon as arrow
 import lib.write_html as html
-#import lib.RRE as RRE
+import lib.RRE as RRE
 import lib.write_operons as wgbk
 import lib.write_operons_js as woj
 
@@ -411,9 +419,9 @@ def score_operons(operons,score_order,settings):
                     base_score += settings['score_%s' %key]
                 if len(genes) > 1 and 'bonus_%s' %key in settings:
                     base_score += settings['bonus_%s' %key]
-        
-        score =  base_score* len(precursors) ** settings['weight_precursors'] / \
-                 (cog ** settings['weight_cog'])
+                    
+        score =  old_div(base_score* len(precursors) ** settings['weight_precursors'], \
+                 (cog ** settings['weight_cog']))
         operon.score = score
     
 #***** Reading/Writing functions
@@ -510,7 +518,7 @@ def set_collection_paths(collections_by_type,settings):
         type_path = os.path.join(entry_path,coll_type)
         if not os.path.isdir(type_path):
             os.mkdir(type_path)
-        for name,coll in collections.items():
+        for name,coll in list(collections.items()):
             coll.path = os.path.join(type_path,coll.name + '.html')
             
 def make_collections_per_genomes(operons,genome_dict):
@@ -526,8 +534,8 @@ def make_collections_per_genomes(operons,genome_dict):
     
 def prep_collections(collections_by_type):
     # Get all domains that are present in at least 50% of operons
-    for collections in collections_by_type.values():
-        for coll in collections.values():
+    for collections in list(collections_by_type.values()):
+        for coll in list(collections.values()):
             logger.debug('Setting common domains for collection %s' %coll)
             coll.set_common_domains()
             if not hasattr(coll,'mibig'):
@@ -609,7 +617,7 @@ def write_edge_data(operon,COG_text,pair_data,keywords,handle):
                 # This should usually make no difference, but sometimes will in the cases where two antismash
                 # gene clusters are partially overlapping with the operon, without overlapping with each other
                 cluster_types = []
-                for cluster,cluster_data in operon.overlaps_antismash.items():
+                for cluster,cluster_data in list(operon.overlaps_antismash.items()):
                     if cluster_data['overlap_type'] == 'total' or \
                        (cluster_data['overlap_type'] == 'partial' and cluster_data['overlap_fraction'] > settings['antismash_minimal_overlap']):
                         cluster_types.extend(cluster_data['cluster_type'])
@@ -627,7 +635,7 @@ def write_edge_data(operon,COG_text,pair_data,keywords,handle):
             if hasattr(operon,'mibig'):
                 text += '\t'
             else:
-                text += '%s\t' %str(int(operon.nr_RRE))
+                text += '\t%s' %str(int(operon.nr_RRE))
         if hasattr(operon,'mibig'):
             handle.write(text + '\t1\n' )
         else:
@@ -702,7 +710,7 @@ def write_operons(operons,settings,outfile,**kwargs):
                         antismash_text += ',%s' %('-'.join(antismash_data['cluster_type']))
                 data.append(antismash_text)
             if settings['run_rre']:
-                data.append(str(operons.nr_RRE))
+                data.append(str(operon.nr_RRE))
             nr_genes_per_type = {}
             data += [str(len(operon.genes_biosyn)),str(len(operon.genes_transporter)),str(len(operon.genes_peptidase)),\
                      str(len(operon.genes_regulator)),str(len(operon.genes_kripp)),str(len(operon.all_domains)),','.join(operon.biosyn),
@@ -804,7 +812,7 @@ def filter_collections_change_paths(group_collections,old_outfolder,new_outfolde
     for category in group_collections:
         operon_collections = group_collections[category]
         out[category] = {}
-        for coll_name,operon_coll in operon_collections.items():
+        for coll_name,operon_coll in list(operon_collections.items()):
             new_operons = {}
             for operon in operon_coll.itersubset(**kwargs):
                 # If any operon is given here, the collection can be passed on
@@ -812,7 +820,7 @@ def filter_collections_change_paths(group_collections,old_outfolder,new_outfolde
             # Also get the MIBiG operons
             for operon in operon_coll.itersubset(mibig=True):
                 new_operons[operon.name] = operon
-            if len([i for i in new_operons.values() if not hasattr(i,'mibig')]) > 1 or (len(new_operons) > 0 and category == 'genome'):
+            if len([i for i in list(new_operons.values()) if not hasattr(i,'mibig')]) > 1 or (len(new_operons) > 0 and category == 'genome'):
                 new_coll = OperonCollection(new_operons,prep=False,collection_type=operon_coll.collection_type,name=operon_coll.name,\
                                             descr=operon_coll.descr)
                 if hasattr(operon_coll,'realname'):
@@ -869,7 +877,7 @@ def parse_arguments():
     parser.add_argument('--skip-hmm',help=argparse.SUPPRESS,default=False,action='store_true')
     
     args = parser.parse_args()
-    for key,value in args.__dict__.items():
+    for key,value in list(args.__dict__.items()):
         # Update only if the args value is not None
         if value != None:
             settings[key] = value
@@ -973,8 +981,10 @@ if __name__ == '__main__':
     logger = return_logger('gene_cluster_formation', False)
     setup_loggers(settings)
     
-    # Temporary to disable RREFinder until it is reimplemented
-    settings['run_rre'] = False
+    # Disable RREFinder if ran with python2
+    if PYTHON_VERSION == 2 and settings['run_rre']:
+        logger.info('Warning: RRE-Finder requires python3 and will be skipped')
+        settings['run_rre'] = False
     
     name = settings['name']
     path = os.path.abspath(os.path.join(settings['outputfolder'],name)) + os.sep 
@@ -1021,6 +1031,10 @@ if __name__ == '__main__':
         if not os.path.isdir(p):
             os.mkdir(p)
             
+    if settings['run_rre']:
+        if not os.path.isdir(RRE_path):
+            os.mkdir(RRE_path)
+
     EC_classes,all_domains,domain_descr,domain2ec,mibig_domaindict,genome_dict = initialize(settings,name)
     
     # Temp fix for backwards compatibility
@@ -1093,12 +1107,15 @@ if __name__ == '__main__':
     logger.debug('Setting gene cluster paths')
     operons.set_gene_to_operon()
     
-
-#    if settings['run_rre']:
-#        RRE_wrapper(path,RRE_path,genome_dict,operons,settings)
-#    else:
-#        for operon in operons:
-#            operon.nr_RRE = 'N\\A'
+    if settings['run_rre']:
+        logger.info('Finding RREs')
+        curr = os.getcwd()
+        os.chdir(settings['rrefinder_path'])
+        operons = RRE.main(path,RRE_path,genome_dict,operons,settings)
+        os.chdir(curr)
+    else:
+        for operon in operons:
+            operon.nr_RRE = 'N\\A'
 
     # Step 5: Organize operons
         # 5a) By BLAST similarity of precursors
