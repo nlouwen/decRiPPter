@@ -1,12 +1,17 @@
 # License: GNU Affero General Public License v3 or later
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
 import os
 import sys
 import numpy as np
 import json
 
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:
     import pickle
 
@@ -15,7 +20,7 @@ from Bio import SeqIO
 
 from subprocess import call, Popen, PIPE
 
-from log import return_logger
+from .log import return_logger
 logger = return_logger(__name__, False)
 
 PYTHON_VERSION = sys.version_info[0]
@@ -42,24 +47,24 @@ def clean(folder):
 
 def sortdictkeysbyvalues(dict, index = False, double_dict = False,reverse = False):
     if type(index) == int and double_dict:
-        items = [(min([i[index] for i in value.values()]),key) for key,value in dict.items()]
+        items = [(min([i[index] for i in list(value.values())]),key) for key,value in list(dict.items())]
     elif double_dict == True and type(index) == bool and index == False:
-        items = [(min([i for i in value.values()]),key) for key,value in dict.items()]
+        items = [(min([i for i in list(value.values())]),key) for key,value in list(dict.items())]
     elif type(index) == int:
-        items = [(value[index], key) for key, value in dict.items()]
+        items = [(value[index], key) for key, value in list(dict.items())]
     else:
-        items = [(value, key) for key, value in dict.items()]
+        items = [(value, key) for key, value in list(dict.items())]
     items.sort(reverse=reverse)
     return [key for value, key in items]
     
 def sortdictkeysbylenvalues(dict,reverse=False):
-    items = [(len(value),key) for key,value in dict.items()]
+    items = [(len(value),key) for key,value in list(dict.items())]
     items.sort(reverse=reverse)
     return [key for value, key in items]
     
 def flip_dict(d):
     d_out = {}
-    for key,value in d.items():
+    for key,value in list(d.items()):
         d_out[value] = key
     return d_out
 
@@ -80,14 +85,14 @@ elif PYTHON_VERSION == 3:
     def load_pickle(f,t=dict):
         try:
             with open(f,'rb') as f_open:
-                res = pickle.load(f_open,fix_imports)
+                res = pickle.load(f_open, encoding='latin1')
             return res
         except IOError:
             logger.error('Pickle file %s not found' %(f))
             raise ValueError('Pickle file %s not found' %(f))
             
 def store_pickle(data,path,basepath=''):
-    with open(os.path.join(basepath, path),'w') as pfile:
+    with open(os.path.join(basepath, path),'wb') as pfile:
         pickle.dump(data,pfile)
         
 def find_file(genome_path,ext,extra_req,negative=[]):
@@ -310,8 +315,10 @@ def run_mcl(inf,outf,threads,I=1.5):
 
 def run_prodigal_cmd(infile,outfile):
     cmds = ['prodigal','-i',infile,'-o',outfile,'-f','sco']
-    stdout, stderr = run_cmd(cmds)
-    
+    with open(os.devnull, 'w') as null:
+        p = Popen(cmds, stderr=null)
+        p.wait()
+
 def run_cmd(commands):
     logger.debug('Running system command "%s"' %(' '.join(commands)))
     p = Popen(commands, stdout=PIPE, stderr=PIPE)
@@ -429,7 +436,7 @@ def read_template(f,p=False):
     
     
 # Generic container object for various purposes
-class Container():
+class Container(object):
     # Container for provided settings and to store info on genes
     def __init__(self):
         pass
@@ -439,10 +446,10 @@ class Container():
         else:
             return('Container object')
     def setattrs(self,**kwargs):
-        for key,value in kwargs.items():
+        for key,value in list(kwargs.items()):
             setattr(self,key,value)
             
-class Edge():
+class Edge(object):
     def __init__(self,weight,data):
         self.weight = weight
         self.data = data
@@ -450,7 +457,7 @@ class Edge():
     def __repr__(self):
         return('Edge object (weight: %.2f; data: %s' %(self.weight,self.data))
 # Classes to use in itergenes and itersubset functions
-class Max():
+class Max(object):
     def __init__(self,a):
         self.a = a
     def __eq__(self,k):
@@ -460,7 +467,7 @@ class Max():
     def __repr__(self):
         return('Max(%s)' %(self.a.__repr__()))
 
-class Min():
+class Min(object):
     def __init__(self,a):
         self.a = a
     def __eq__(self,k):
@@ -470,7 +477,7 @@ class Min():
     def __repr__(self):
         return('Min(%s)' %self.a.__repr__())
 
-class Contains():
+class Contains(object):
     def __init__(self,*args):
         self.a = args
     def __eq__(self,k):
@@ -489,7 +496,7 @@ class Contains():
     def __repr__(self):
         return('Contains(%s)' %','.join(self.args))
 
-class IsIn():
+class IsIn(object):
     def __init__(self,*args):
         self.a = args
         
@@ -502,7 +509,7 @@ class IsIn():
     def __repr__(self):
         return('IsIn(%s)' %(self.args.__repr()))
 
-class DictValue():
+class DictValue(object):
     def __init__(self,key,value):
         self.key = key
         self.value = value
@@ -511,20 +518,20 @@ class DictValue():
         if self.key != None:
             return((type(k) == dict or dict in k.__class__.__bases__) and self.key in k and k[self.key] == self.value)
         else:
-            return((type(k) == dict or dict in k.__class__.__bases__) and self.value in k.values())
+            return((type(k) == dict or dict in k.__class__.__bases__) and self.value in list(k.values()))
         
     def __ne__(self,k):
         if self.key != None:
             return(not(type(k) == dict or dict in k.__class__.__bases__) or self.key not in k or k[self.key] != self.value)
         else:
-            return(not(type(k) == dict or dict in k.__class__.__bases__) or self.value not in k.values())
+            return(not(type(k) == dict or dict in k.__class__.__bases__) or self.value not in list(k.values()))
         
     def __repr__(self):
         return('DictValue(key=%s,value=%s)' %(self.key.__repr__(),self.value.__repr__()))
         
 
 
-class Length():
+class Length(object):
     def __init__(self,a,req_type=None):
         self.a = a
         self.req_type = req_type
@@ -543,7 +550,7 @@ class Length():
         return('Length(%s)' %self.a.__repr__())
 
 
-class OR():
+class OR(object):
     def __init__(self,*conditions):
         self.conditions = conditions
     
@@ -556,7 +563,7 @@ class OR():
     def __repr__(self):
         return('OR(%s)' %(', '.join([i.__repr__() for i in self.conditions])))
         
-class AND():
+class AND(object):
     def __init__(self,*conditions):
         self.conditions = conditions
     
@@ -569,7 +576,7 @@ class AND():
     def __repr__(self):
         return('AND(%s)' %(', '.join([i.__repr__() for i in self.conditions])))
         
-class NOT():
+class NOT(object):
     def __init__(self,a):
         self.a = a
         
