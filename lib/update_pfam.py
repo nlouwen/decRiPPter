@@ -1,6 +1,9 @@
 # License: GNU Affero General Public License v3 or later
 
-from lib import load_pickle,store_pickle
+from __future__ import print_function
+from __future__ import absolute_import
+
+from .lib import load_pickle,store_pickle
 import os
 
 def read_pfam(p):
