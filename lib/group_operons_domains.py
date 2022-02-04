@@ -1,12 +1,14 @@
 # Calculate the jaccard index of found operons 
 # Use it to form networks/groups
 
+from __future__ import absolute_import
+
 import os
 import time
-from lib import store_pickle, load_pickle, run_mcl, read_mcl, pairs_to_groups, write_ssn, Edge
-from log import return_logger
-from Genes import OperonCollection
-from multiprocessing_wrappers import operator
+from .lib import store_pickle, load_pickle, run_mcl, read_mcl, pairs_to_groups, write_ssn, Edge
+from .log import return_logger
+from .Genes import OperonCollection
+from .multiprocessing_wrappers import operator
 
 logger = return_logger(__name__, False)
 
