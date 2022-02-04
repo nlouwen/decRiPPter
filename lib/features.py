@@ -1,8 +1,13 @@
 # License: GNU Affero General Public License v3 or later
 
+from __future__ import division
+from builtins import range
+from builtins import object
+from past.utils import old_div
 from numpy import log2
+import numpy as np
 
-class RiPP:
+class RiPP(object):
 
     def __init__(self, sequence):
         self.sequence = sequence
@@ -83,29 +88,29 @@ class RiPP:
             self.cys30 = self.sequence.count('C') / float(self.length)
             self.cys_ser30 = (self.sequence.count('C') + self.sequence.count('S')) / float(self.length)
             self.cys20 = max([self.sequence[rng:rng+20].count('C') / float(len(self.sequence[rng:rng+20])) \
-                      for rng in xrange(0,self.length,1) if len(self.sequence[rng:rng+20])==20])
+                      for rng in range(0,self.length,1) if len(self.sequence[rng:rng+20])==20])
             self.cys_ser20 = max([(self.sequence[rng:rng+20].count('C') + self.sequence[rng:rng+20].count('S')) \
-                      / float(len(self.sequence[rng:rng+20])) for rng in xrange(0,self.length,1) if \
+                      / float(len(self.sequence[rng:rng+20])) for rng in range(0,self.length,1) if \
                       len(self.sequence[rng:rng+20])==20])
             
         else:
             self.cys30 = max([self.sequence[rng:rng+30].count('C') / float(len(self.sequence[rng:rng+30])) \
-                      for rng in xrange(0,self.length,1) if len(self.sequence[rng:rng+30])==30])
+                      for rng in range(0,self.length,1) if len(self.sequence[rng:rng+30])==30])
             self.cys20 = max([self.sequence[rng:rng+20].count('C') / float(len(self.sequence[rng:rng+20])) \
-                      for rng in xrange(0,self.length,1) if len(self.sequence[rng:rng+20])==20])
+                      for rng in range(0,self.length,1) if len(self.sequence[rng:rng+20])==20])
             self.cys_ser30 = max([(self.sequence[rng:rng+30].count('C') + self.sequence[rng:rng+30].count('S')) \
-                      / float(len(self.sequence[rng:rng+30])) for rng in xrange(0,self.length,1) if \
+                      / float(len(self.sequence[rng:rng+30])) for rng in range(0,self.length,1) if \
                       len(self.sequence[rng:rng+30])==30])
             self.cys_ser20 = max([(self.sequence[rng:rng+20].count('C') + self.sequence[rng:rng+20].count('S')) \
-                      / float(len(self.sequence[rng:rng+20])) for rng in xrange(0,self.length,1) if \
+                      / float(len(self.sequence[rng:rng+20])) for rng in range(0,self.length,1) if \
                       len(self.sequence[rng:rng+20])==20])
 
         # --- aafreq
-        for aa in self.aafreq.keys():
+        for aa in list(self.aafreq.keys()):
             self.aafreq[aa] = self.sequence.count(aa) / float(self.length)
 
         # --- clfreq
-        for aas in self.clfreq.keys():
+        for aas in list(self.clfreq.keys()):
             self.clfreq[aas] = sum( [self.sequence.count(aa) for aa in aas] ) / float(self.length)
 
         # --- charge & avgcharge
@@ -117,11 +122,11 @@ class RiPP:
 
         # --- k-tuplet entropy
         Es = []
-        for rng in xrange(self.length):
+        for rng in range(self.length):
             s = 0.
             seqtmp = self.sequence[rng:rng+10]
             if 1:#len(seqtmp)==10:
-                for i in xrange(1,len(seqtmp)):
+                for i in range(1,len(seqtmp)):
                     try: s -= self.aafreq[seqtmp[i]]*self.aafreq[seqtmp[i]]*self.aafreq[seqtmp[i-1]] \
                          *log2(self.aafreq[seqtmp[i]]*self.aafreq[seqtmp[i-1]])
                     except KeyError: pass
@@ -131,21 +136,21 @@ class RiPP:
 
         # --- entropy ratio
         Es = []
-        for rng in xrange(self.length):
+        for rng in range(self.length):
             s = 0.
             seqtmp = self.sequence[rng:rng+10]
             if len(seqtmp)<5: continue
             aatmp = set(seqtmp)
-            stotal = -sum([self.aafreq[i]*log2(self.aafreq[i]) for i in aatmp if i in self.aafreq])
-            stemp  = -sum([(seqtmp.count(i)/10.)*log2((seqtmp.count(i)/10.)) for i in aatmp if i in self.aafreq])
-            try: Es.append( stemp/stotal )
+            stotal = float(-sum([self.aafreq[i]*log2(self.aafreq[i]) for i in aatmp if i in self.aafreq]))
+            stemp  = float(-sum([(seqtmp.count(i)/10.)*log2((seqtmp.count(i)/10.)) for i in aatmp if i in self.aafreq]))
+            try: Es.append( old_div(stemp,stotal) )
             except ZeroDivisionError: Es.append(2.)
         try:
             self.entropyratio = min(Es)
         except:
             raise ValueError('Error with min(Es) on smORF with sequence %s' %self.sequence)
-        return self # for use in list comprehension
-    
+	return self # for use in list comprehension
+
     def make_list(self):
         
         aalist = ["A", "R", "N", "D", "C", "E", "Q", "G", "H", "I", "L", "K", \
@@ -161,8 +166,8 @@ class RiPP:
     
     def get_features(self):
         feature_list = [self.sequence, self.cys30, self.cys20, self.cys_ser30, self.cys_ser20, self.charge, self.avgcharge, self.avghydrop, self.length, self.entropy, self.entropyratio]
-        amino_acids = self.aafreq.keys()
-        clusters = self.clfreq.keys()
+        amino_acids = list(self.aafreq.keys())
+        clusters = list(self.clfreq.keys())
         clusters.sort()
         amino_acids.sort()
         feature_list += [self.aafreq[aa] for aa in amino_acids]
