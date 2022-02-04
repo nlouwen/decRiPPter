@@ -1,5 +1,8 @@
 # License: GNU Affero General Public License v3 or later
 
+from __future__ import absolute_import
+
+from builtins import str
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
@@ -9,7 +12,7 @@ from Bio.SeqFeature import SeqFeature,FeatureLocation
 import os
 import datetime
 
-from log import return_logger
+from .log import return_logger
 logger = return_logger(__name__, False)
 
 def write_genbank(operons):
