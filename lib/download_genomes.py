@@ -1,8 +1,11 @@
 # License: GNU Affero General Public License v3 or later
 
+from __future__ import absolute_import
+from builtins import str
+
 from ftplib import FTP
-from lib import find_file, clean
-from log import return_logger
+from .lib import find_file, clean
+from .log import return_logger
 
 import gzip
 import tarfile
