@@ -1,11 +1,13 @@
 # License: GNU Affero General Public License v3 or later
 
+from __future__ import absolute_import
+from builtins import range
 import os
 import time
 import traceback
 
 from multiprocessing import Process,Queue
-from log import return_logger
+from .log import return_logger
 
 
 logger = return_logger(__name__, False)
@@ -46,7 +48,7 @@ def operator(jobs,nr_workers,target_function,target_args,quiet=False,sleeptime=1
     multiplier_to_print = 100
     while any([w.is_alive() for w in workers]):
         if print_status:
-            logger.debug('Working with target function: %s' %target_function.func_name)
+            logger.debug('Working with target function: %s' %target_function.__name__)
             logger.debug('%i workers still alive' %(len([w.is_alive() for w in workers])))
             logger.debug('Work queue: %i; all_groups: %i' %(job_queue.qsize(),len(jobs)))
         while results_queue.qsize() > 0:
@@ -107,7 +109,7 @@ def worker_wrapper(args,job_queue,results_queue,function,quiet):
         elif type(job) in (tuple,list):
             logger.debug('Process id %s starting work on job starting with %s' %(process_id, job[0]))
         elif type(job) == dict:
-            logger.debug('Process id %s starting work on job starting with %s' %(process_id, job.keys()[0]))
+            logger.debug('Process id %s starting work on job starting with %s' %(process_id, list(job.keys())[0]))
             
         job_args = [job] + args
         try:
