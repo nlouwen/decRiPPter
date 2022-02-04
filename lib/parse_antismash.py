@@ -1,9 +1,11 @@
 # License: GNU Affero General Public License v3 or later
 
+from __future__ import absolute_import
+
 import os
 
-from lib import load_pickle, open_genbank
-from log import return_logger
+from .lib import load_pickle, open_genbank
+from .log import return_logger
 
 logger = return_logger(__name__, False)
 
@@ -76,7 +78,7 @@ def get_antismash_results_file(folder, antismash_version, genome_name):
     if antismash_version == 4:
         eligible_files = [f for f in files if f.endswith('.final.gbk')]
     elif antismash_version == 5:
-        eligible_files = [f for f in files if f == '%s.gbk' %genome_name]
+        eligible_files = [f for f in files if f == '%s.gbk' %genome_name or f == '%s_prodigal.gbk' %genome_name]
     if len(eligible_files) > 1:
         logger.error('More than one antiSMASH final result file found in folder %s' %folder)
         raise ValueError()
