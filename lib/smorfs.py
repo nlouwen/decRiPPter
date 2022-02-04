@@ -1,16 +1,22 @@
 # License: GNU Affero General Public License v3 or later
 
 # Functions to find smORFs in sequences and score them
+
+from __future__ import absolute_import
+
+from builtins import zip
+from builtins import str
+from builtins import range
 from multiprocessing import Process, Queue
 import time
 import os
 import numpy as np
 
-from features import RiPP
-from lib import rev_comp, split_data, load_pickle
-from log import return_logger
-from Genes import Gene
-from multiprocessing_wrappers import operator
+from .features import RiPP
+from .lib import rev_comp, split_data, load_pickle
+from .log import return_logger
+from .Genes import Gene
+from .multiprocessing_wrappers import operator
 
 logger = return_logger(__name__, False)
 
@@ -52,7 +58,7 @@ def smorfs_operator(settings, genome_dict):
     
     SVM3, SVM4, SVMr = load_SVM_models(settings)
     
-    jobs = genome_dict.keys()
+    jobs = list(genome_dict.keys())
     target_args = [settings, genome_path, ripp_features, SVM3, SVM4, SVMr]
     results = operator(jobs, threads, smorfs_worker, target_args, quiet=False)
     total = 0
