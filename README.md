@@ -95,17 +95,12 @@ The easiest way to install it is to create a vritual environment
 
 Then use pip to install these python packages. The following versions have been tested:
 
-scikit-learn==0.11
-
-biopython==1.76
-
-scipy==1.2.3
-
-matplotlib==2.2.5
-
-networkx==2.2
-
-numpy==1.16.6
+    scikit-learn==0.11
+    biopython==1.76
+    scipy==1.2.3
+    matplotlib==2.2.5
+    networkx==2.2
+    numpy==1.16.6
 
 Some issues with installing BioPython 1.76 on Python2 have been reported. If you encounter these, please try installing 1.75 or 1.74.
 
@@ -146,9 +141,22 @@ Genome (re)annotation is built in with decRiPPter via prodigal, although it is n
 
 Download and install antiSMASH V5 as specified in it's own environment. 
 
+
+```RRE-Finder``` (from [RREFinder](https://github.com/Alexamk/RREFinder))
+
+Download and configure RREFinder as specified in it's own folder and environment. To utilize RREFinder correctly from within decRiPPter, add these additional packages to the RREFinder environment:
+
+    scipy==1.2.3
+    matplotlib==2.2.5
+    networkx==2.2
+
+
+
 #### 3) Setup the config file:
 In the config file, let the variables ```pfam_db_path``` and ```tigrfam_db_path``` point to the Pfam and TIGRFAM databases, respectively. 
 When downloading genomes, taxonomy information will be downloaded. Specify a taxonomy folder for this in the config file under ```taxonomy_folder```.
+If RREFinder is used, let the variable ```rrefinder_path``` point to the RREFinder folder containing ```RRE.py```.
+
 
 
 ## Usage:
@@ -176,7 +184,7 @@ Run the antiSMASH wrapper; use the same arguments for ```-o``` and ```PROJECT NA
 
     python antismash_wrapper.py -o path/to/output PROJECT NAME
 
-Switch back to decRiPPter environment
+Switch back to decRiPPter environment **OR**, if enabled, the RREFinder environment
 
     source /path/to/decrippter_env/bin/activate
 
