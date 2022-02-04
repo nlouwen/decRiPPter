@@ -1,14 +1,17 @@
 # License: GNU Affero General Public License v3 or later
 
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
 import time
 import os
 
 from subprocess import Popen, PIPE, call
 from multiprocessing import Process, Queue
 
-from lib import fuse_dict_list, clean, run_cmd
+from .lib import fuse_dict_list, clean, run_cmd
 
-from log import return_logger
+from .log import return_logger
 logger = return_logger(__name__, False)
 
 def main(operons,settings): 
