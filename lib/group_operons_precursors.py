@@ -3,18 +3,20 @@
 # BLAST all precursors against each other
 # Use them to form networks/groups
 
+from __future__ import absolute_import
+
 import os
 import pickle
 import time
 import numpy as np
 
-from blast import makeblastdb, blast_mp
-from lib import store_pickle, load_pickle, run_mcl, read_mcl, pairs_to_groups, write_ssn, clean, muscle, Edge
-from Genes import OperonCollection
+from .blast import makeblastdb, blast_mp
+from .lib import store_pickle, load_pickle, run_mcl, read_mcl, pairs_to_groups, write_ssn, clean, muscle, Edge
+from .Genes import OperonCollection
 
-from multiprocessing_wrappers import operator
+from .multiprocessing_wrappers import operator
 
-from log import return_logger
+from .log import return_logger
 logger = return_logger(__name__, False)
 
 
@@ -163,7 +165,7 @@ def blasthit2muscle(operon_collections,path):
     if not os.path.isdir(path_fasta):
         os.mkdir(path_fasta)
     out_text = ''
-    for name,coll in operon_collections.items():
+    for name,coll in list(operon_collections.items()):
         fasta_file = os.path.join(path_fasta,coll.name+'.fasta')
         muscle_file = os.path.join(path_fasta,coll.name+'.clw')
         if not os.path.isfile(fasta_file):
@@ -182,12 +184,12 @@ def muscle_operator(operon_collections,path,nr_cores):
     path_muscle = os.path.join(path,'all_muscle.txt')
     if not os.path.isdir(path_fasta):
         os.mkdir(path_fasta)
-    for coll in operon_collections.values():
+    for coll in list(operon_collections.values()):
         fasta_file = os.path.join(path_fasta,coll.name+'.fasta')
         if not os.path.isfile(fasta_file):
             coll.write_fasta(filename=fasta_file,precursor_groups=coll.name)
     
-    jobs = [i.name for i in operon_collections.values()]
+    jobs = [i.name for i in list(operon_collections.values())]
     worker_args = [path_fasta,path_muscle]
     results = operator(jobs,nr_cores,muscle_worker,worker_args,sleeptime=1)
     out_text = ''.join(results)
@@ -219,7 +221,7 @@ def filter_smorfs_pairs(smorf_groups,smorf_pairs):
     
 def get_pairing_precursors(operons,mibig_dict,smorf_pairs):
     operon_pairs = {}
-    for smorf,paired in smorf_pairs.items():
+    for smorf,paired in list(smorf_pairs.items()):
         gene_obj = operons[smorf]
         if gene_obj == None:
             bgc,_,prec = smorf.partition('_')
