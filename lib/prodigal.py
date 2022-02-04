@@ -1,5 +1,9 @@
 # License: GNU Affero General Public License v3 or later
 
+from __future__ import absolute_import
+
+from builtins import str
+from builtins import range
 import os
 
 from Bio import SeqIO
@@ -8,11 +12,11 @@ from Bio.SeqFeature import SeqFeature,FeatureLocation
 from Bio.Alphabet import IUPAC
 from subprocess import call
 from multiprocessing import Queue, Process
-from multiprocessing_wrappers import operator
+from .multiprocessing_wrappers import operator
 
-from lib import find_file,fuse_dict_add, run_prodigal_cmd
-from log import return_logger
-from multiprocessing_wrappers import operator
+from .lib import find_file,fuse_dict_add, run_prodigal_cmd
+from .log import return_logger
+from .multiprocessing_wrappers import operator
 
 logger = return_logger(__name__, False)
 
