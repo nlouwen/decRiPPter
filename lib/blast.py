@@ -1,8 +1,13 @@
 # License: GNU Affero General Public License v3 or later
 
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
 
-from lib import fuse_dict_list, parse_fasta, dict_to_fasta, split_dict, run_cmd
-from log import return_logger
+from .lib import fuse_dict_list, parse_fasta, dict_to_fasta, split_dict, run_cmd
+from .log import return_logger
 
 from multiprocessing import Process, Queue
 import os
@@ -71,7 +76,7 @@ def blast_worker(query,out,db_file,nr,queue,name,parse_function,parse_function_a
     logger.debug('Blasting process %s' %nr)
     commands = ['blastp','-query',query,'-db',db_file,'-out',out,'-evalue', str(evalue), '-outfmt',outfmt]
     if kwargs != {}:
-        for key,value in kwargs.items():
+        for key,value in list(kwargs.items()):
             commands += ['-'+str(key),str(value)]
     if not os.path.isfile(out):
         _ = run_cmd(commands)
