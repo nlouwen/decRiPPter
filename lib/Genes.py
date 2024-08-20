@@ -128,7 +128,7 @@ class D(dict):
             for key in extra_dict:
                 out += '>%s\n%s\n' %(key,extra_dict[key])
         if filename:
-            if isinstance(filename, type(u"")):
+            if isinstance(filename, type(u"")) or isinstance(filename, str):
                 with open(filename,'w') as f:
                     f.write(out)
             elif type(filename) == list:
